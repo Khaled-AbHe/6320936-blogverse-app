@@ -1,7 +1,7 @@
-[submodule "6320936-blogverse-frontend"]
-    path = 6320936-blogverse-frontend
-    url = git@github.com:Khaled-AbHe/6320936-blogverse-frontend.git
-
 [submodule "6320936-blogverse-backend"]
     path = 6320936-blogverse-backend
-    url = git@github.com:Khaled-AbHe/6320936-blogverse-backend.git
+    url = https://github.com/Khaled-AbHe/6320936-blogverse-backend.git
+
+[submodule "6320936-blogverse-frontend"]
+    path = 6320936-blogverse-frontend
+    url = https://github.com/Khaled-AbHe/6320936-blogverse-frontend.git
