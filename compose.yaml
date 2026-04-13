@@ -1,0 +1,70 @@
+services:
+
+  db:
+    image: mysql:8.0
+    container_name: blogverse_db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    networks:
+      - 6320936-blogverse-network
+    # ports:
+    #   - "3306:3306" dont need it anymore bc we're not hosting it locally anymore
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    image: khaledabhe/tp2-6320936-blogverse-backend:${BACKEND_VERSION:-latest} # It will put "latest" if BACKEND_VERSION isnt specified
+    build:
+      context: ./6320936-blogverse-backend
+      dockerfile: Dockerfile # Not required to have
+    container_name: backend
+    restart: unless-stopped
+    environment:
+      DB_HOST: db # Points to the db service at line 3
+      DB_PORT: 3306
+      DB_NAME: ${MYSQL_DATABASE}
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      PORT: ${BACKEND_PORT:-3000}
+      NODE_ENV: production
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-7d}
+    networks:
+      - 6320936-blogverse-network
+    ports:
+      - "${BACKEND_PORT:-3000}:3000" # It will put "3000" if BACKEND_PORT isnt specified
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    image: khaledabhe/tp2-6320936-blogverse-frontend:${FRONTEND_VERSION:-latest}
+    build:
+      context: ./6320936-blogverse-frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: frontend
+    restart: unless-stopped
+    networks:
+      - 6320936-blogverse-network
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+    depends_on:
+      - backend
+
+volumes:
+  db_data:
+
+networks:
+  6320936-blogverse-network:
+    driver: bridge
